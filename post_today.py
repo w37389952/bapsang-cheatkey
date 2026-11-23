@@ -72,6 +72,16 @@ def main():
     pub = api("POST", "me/threads_publish", creation_id=c)
     info = api("GET", pub["id"], fields="permalink")
     print(f"게시 완료: {info.get('permalink')}")
+    # 첫 댓글 (쿠팡 파트너스 링크 등). 실패해도 본문 게시는 유지
+    if post.get("comment"):
+        try:
+            time.sleep(10)
+            r = api("POST", "me/threads", media_type="TEXT", text=post["comment"], reply_to_id=pub["id"])["id"]
+            wait_ready(r)
+            api("POST", "me/threads_publish", creation_id=r)
+            print("첫 댓글 게시 완료")
+        except Exception as e:
+            print(f"첫 댓글 실패: {e}")
 
 if __name__ == "__main__":
     main()
